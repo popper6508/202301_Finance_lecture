@@ -10,9 +10,6 @@ import datetime as date
 from dateutil.relativedelta import relativedelta
 from io import BytesIO
 
-firmdata= pd.DataFrame(pd.read_csv("firmdata.csv", encoding = "utf-8"))
-firmdata['종목코드'] = firmdata['종목코드'].astype(str).apply(lambda x: x.zfill(6))
-
 def accounting() :
         i = input("종목명 : ")
         firm_code = firmdata.loc[firmdata["종목명"] == i, "종목코드"]
@@ -67,26 +64,3 @@ def accounting() :
         data_CF = data_CF.dropna()
 
         return data_IS, data_BS, data_CF
-
-
-##Accounting data need visualization
-
-def price_one(firmcode) :
-        fr = (date.datetime.today() + relativedelta(years=-40)).strftime("%Y%m%d")
-        to = (date.datetime.today()).strftime("%Y%m%d")
-        url = f'''https://api.finance.naver.com/siseJson.naver?symbol={firmcode}&requestType=1&startTime={fr}&endTime={to}&timeframe=day'''
-        data = requests.get(url).content
-        price = pd.read_csv(BytesIO(data))
-        price = price.iloc[:,0:7]
-        price.columns = ['날짜', '시가', '고가', '저가', '종가', '거래량', '외국인소진율']
-        price['날짜'] = price['날짜'].str.extract('(\d+)')
-        price['날짜'] = pd.to_datetime(price['날짜'])
-        price['code'] = firmcode
-        plt.rcParams['figure.dpi'] = 100
-        plt.plot(price["날짜"], price["종가"])
-        plt.show()
-
-        return price
-
-##SQL
-
